@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reto 21 Días – Hoja de Avance (Estilo GitHub)</title>
+  <style>
+    :root{
+      --bg: #0b0c10;
+      --card: #111218;
+      --ink: #e6e6e6;
+      --muted: #9aa0a6;
+      --grid-border:#262a33;
+      --empty:#1b1f2a;
+      --done1:#1f6feb22;
+      --done2:#1f6feb55;
+      --done3:#1f6feb88;
+      --done4:#1f6febcc;
+      --accent:#1f6feb;
+      --ok:#22c55e;
+      --warn:#eab308;
+      --danger:#ef4444;
+      --focus:#f59e0b;
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f8fafc;
+        --card:#ffffff;
+        --ink:#0b0c10;
+        --muted:#475569;
+        --grid-border:#e5e7eb;
+        --empty:#eef2f7;
+      }
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; padding:24px;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
+      background: var(--bg);
+      color: var(--ink);
+      line-height:1.4;
+    }
+    .wrap{
+      max-width: 980px; margin: 0 auto;
+      display: grid; gap: 20px;
+    }
+    header{
+      display:flex; flex-direction:column; gap:8px;
+    }
+    h1{margin:0; font-size: clamp(20px, 2.4vw, 28px)}
+    .subtitle{color:var(--muted); font-size: 14px}
+    .controls{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    }
+    button, .pill{
+      border:1px solid var(--grid-border);
+      background:transparent; color:var(--ink);
+      padding:8px 12px; border-radius:10px; cursor:pointer;
+      font-weight:600; font-size:14px;
+    }
+    button:hover{border-color:var(--accent)}
+    .grid-card{
+      background:var(--card);
+      border:1px solid var(--grid-border);
+      border-radius:16px;
+      padding:16px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-auto-rows: 52px;
+      gap: 8px;
+    }
+    .cell{
+      position:relative;
+      border:1px solid var(--grid-border);
+      border-radius:8px;
+      background: var(--empty);
+      display:flex; align-items:center; justify-content:center;
+      user-select:none;
+      transition: transform .05s ease, background .15s ease, border-color .15s ease;
+    }
+    .cell:focus-visible{
+      outline:2px solid var(--focus);
+      outline-offset:2px;
+    }
+    .cell[data-level="1"]{ background: var(--done1); border-color: #2a3342; }
+    .cell[data-level="2"]{ background: var(--done2); border-color: #334055; }
+    .cell[data-level="3"]{ background: var(--done3); border-color: #3b4a66; }
+    .cell[data-level="4"]{ background: var(--done4); border-color: #425577; }
+    .cell .day{
+      font-weight:800; font-size: 14px; opacity:.9;
+      pointer-events:none;
+    }
+    /* Tooltip */
+    .cell .tip{
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0b1020;
+      color: #e6eefc;
+      padding:10px 12px;
+      border-radius:10px;
+      border: 1px solid #21304a;
+      font-size:12px;
+      width: 240px;
+      box-shadow: 0 6px 22px rgba(0,0,0,.35);
+      opacity:0; pointer-events:none; transition: .15s ease;
+      z-index:20;
+    }
+    .cell:hover .tip{ opacity:1; }
+    .tip .t-day{ font-weight:700; color:#9cc1ff; }
+    .legend{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap; color:var(--muted);
+      font-size:13px; margin-top:10px;
+    }
+    .swatch{ width:18px; height:18px; border-radius:4px; border:1px solid var(--grid-border); }
+    .swatch.l0{ background: var(--empty); }
+    .swatch.l1{ background: var(--done1); }
+    .swatch.l2{ background: var(--done2); }
+    .swatch.l3{ background: var(--done3); }
+    .swatch.l4{ background: var(--done4); }
+    /* Phrases card */
+    details.phrases{
+      background:var(--card);
+      border:1px solid var(--grid-border);
+      border-radius:16px; padding:12px 16px;
+    }
+    details.phrases summary{ cursor:pointer; user-select:none; font-weight:700 }
+    .list{
+      display:grid; gap:8px; margin-top:10px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+    .phrase-item{
+      border:1px dashed var(--grid-border);
+      border-radius:12px; padding:10px 12px; color:var(--muted);
+    }
+    .phrase-item b{ color:var(--ink) }
+    /* Print */
+    @media print {
+      body{ background:white; color:black; padding:0 }
+      .wrap{ max-width:none; }
+      .grid-card, details.phrases{ break-inside: avoid; }
+      .controls{ display:none }
+      .cell .tip{ display:none !important }
+      .subtitle{ color:#333 }
+      .phrase-item{ color:#333; border-color:#bbb }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Reto 21 Días – Hoja de Avance (Estilo GitHub)</h1>
+      <div class="subtitle">Marca cada día tu avance. Click en un cuadro para cambiar el nivel de cumplimiento. Se guarda automáticamente.</div>
+      <div class="controls">
+        <button id="reset">Reiniciar</button>
+        <span class="pill" title="Sugerencia de uso">Niveles: vacío → leve → medio → alto → completo</span>
+      </div>
+    </header>
+
+    <section class="grid-card">
+      <div class="grid" id="grid" role="list" aria-label="Matriz de 21 días">
+        <!-- Cells will be injected by script -->
+      </div>
+      <div class="legend" aria-hidden="true">
+        <span>Progreso:</span>
+        <span class="swatch l0" title="Vacío"></span> Vacío
+        <span class="swatch l1" title="Leve"></span> Leve
+        <span class="swatch l2" title="Medio"></span> Medio
+        <span class="swatch l3" title="Alto"></span> Alto
+        <span class="swatch l4" title="Completo"></span> Completo
+      </div>
+    </section>
+
+    <details class="phrases" open>
+      <summary>Frases diarias</summary>
+      <div class="list" id="phrasesList"></div>
+    </details>
+  </div>
+
+  <script>
+    const phrases = [
+      "Empiezo. Respiro y avanzo.",
+      "Mis pulmones trabajan, yo decido.",
+      "Ya aguanto más que ayer.",
+      "El aire entra más fácil, el ánimo también.",
+      "Mi cuerpo se adapta, mi mente se ordena.",
+      "Hoy respiro más profundo que antes.",
+      "Una semana: el cansancio pesa menos.",
+      "Cada inhalación me da control.",
+      "Mi ritmo mejora, mi carácter también.",
+      "No me detengo: el aire ya es aliado.",
+      "Me fatigo menos, me recupero más rápido.",
+      "El corazón late firme, yo lo acompaño.",
+      "La resistencia aparece donde antes faltaba.",
+      "Dos semanas: camino más ligero.",
+      "El aire me sigue el paso, no me falta.",
+      "Respiro mejor, vivo mejor.",
+      "Siento potencia en cada inhalación.",
+      "Mis pulmones responden, mi ánimo también.",
+      "Corro más, me canso menos.",
+      "La fuerza está en mi aire y en mi mente.",
+      "El reto fue físico, el cambio es mental… y respiro libre."
+    ];
+
+    const KEY = "reto21_grid_state_v1";
+    const gridEl = document.getElementById("grid");
+    const listEl = document.getElementById("phrasesList");
+    const resetBtn = document.getElementById("reset");
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(KEY);
+        if(!raw) return Array(21).fill(0);
+        const arr = JSON.parse(raw);
+        if(!Array.isArray(arr) || arr.length !== 21) return Array(21).fill(0);
+        return arr.map(x => Math.max(0, Math.min(4, Number(x)||0)));
+      }catch(e){
+        return Array(21).fill(0);
+      }
+    }
+    function saveState(state){
+      localStorage.setItem(KEY, JSON.stringify(state));
+    }
+
+    const state = loadState();
+
+    function makeCell(dayIdx){
+      const i = dayIdx;
+      const d = i + 1;
+      const cell = document.createElement("button");
+      cell.className = "cell";
+      cell.type = "button";
+      cell.setAttribute("role", "listitem");
+      cell.setAttribute("aria-label", `Día ${d}: ${phrases[i]}`);
+      cell.dataset.index = i;
+      cell.dataset.level = state[i];
+
+      const day = document.createElement("span");
+      day.className = "day";
+      day.textContent = d.toString();
+      cell.appendChild(day);
+
+      const tip = document.createElement("div");
+      tip.className = "tip";
+      tip.innerHTML = `<span class="t-day">Día ${d}</span><br>${phrases[i]}`;
+      cell.appendChild(tip);
+
+      cell.addEventListener("click", () => {
+        const cur = Number(cell.dataset.level) || 0;
+        const next = (cur + 1) % 5; // 0..4
+        cell.dataset.level = next;
+        state[i] = next;
+        saveState(state);
+      });
+
+      // keyboard: Shift+Click → marcar completo, Alt+Click → vacío
+      cell.addEventListener("mousedown", (ev) => {
+        if(ev.shiftKey){ cell.dataset.level = 4; state[i] = 4; saveState(state); ev.preventDefault(); }
+        if(ev.altKey){ cell.dataset.level = 0; state[i] = 0; saveState(state); ev.preventDefault(); }
+      });
+
+      return cell;
+    }
+
+    function renderGrid(){
+      gridEl.innerHTML = "";
+      // 3 filas × 7 columnas (21 días)
+      for(let i=0;i<21;i++){
+        gridEl.appendChild(makeCell(i));
+      }
+    }
+
+    function renderList(){
+      listEl.innerHTML = "";
+      for(let i=0;i<21;i++){
+        const box = document.createElement("div");
+        box.className = "phrase-item";
+        box.innerHTML = `<b>Día ${i+1}:</b> ${phrases[i]}`;
+        listEl.appendChild(box);
+      }
+    }
+
+    resetBtn.addEventListener("click", () => {
+      for(let i=0;i<21;i++) state[i]=0;
+      saveState(state);
+      renderGrid();
+    });
+
+    renderGrid();
+    renderList();
+  </script>
+</body>
+</html>
